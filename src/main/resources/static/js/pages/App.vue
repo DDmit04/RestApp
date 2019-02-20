@@ -13,32 +13,42 @@
 			    need autorize <a href="/login">Google</a>
 		    </v-container>
             <v-container v-if="profile">
-		    	<messages-list />
+		    	<messages-list/>
 		    </v-container>
         </v-content>
 	</v-app>
 </template>
 
 <script>
-    import { mapState } from 'vuex'
+
+    import { mapState, mapMutations } from 'vuex'
     import MessagesList from 'components/messages/MessageList.vue'
     import { addHandler } from 'util/ws'
-    import { getIndex } from 'util/collections'
-
     
     export default {
     	components: {
     		MessagesList
         },
+        methods: mapMutations( ['addMessageMutation', 'updateMessageMutation', 'removeMessageMutation'] ),
         computed: mapState(['profile']),
         created() {
         	addHandler(data => {
-        		let index = getIndex(this.messages, data.id)
-        		if(index > -1) {
-        			this.messages.splice(index, 1, data)
-        		} else {
-        			this.messages.push(data)
-        		}
+                if(data.objectType === 'MESSAGE') {
+                    switch(data.eventType) {
+                        case 'CREATE':
+                            this.addMessageMutation(data.body)
+                            break
+                        case 'UPDATE':
+                            this.updateMessageMutation(data.body)
+                            break
+                        case 'REMOVE':
+                            this.removeMessageMutation(data.body)
+                            break
+                        default: consile.error('uknown event type "${data.eventType}"')
+                    }
+                } else {
+                    consile.error('uknown object type "${data.objectType}"')
+                }
         	})
         }
     }

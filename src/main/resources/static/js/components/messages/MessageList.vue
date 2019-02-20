@@ -13,6 +13,8 @@
     import { mapGetters } from 'vuex';
     import MessageRow from 'components/messages/MessageRow.vue'
     import MessageForm from 'components/messages/MessageForm.vue'
+    import MessagesApi from 'api/messages'
+
     export default {
         components: {
             MessageRow,
@@ -29,7 +31,7 @@
                 this.message = message
             },
             deleteMessage(message) {
-                this.$resource('/message{/id}').remove({id: message.id}).then(result => {
+                MessagesApi.remove(message.id).then(result => {
                     if (result.ok) {
                         this.messages.splice(this.messages.indexOf(message), 1)
                     }
